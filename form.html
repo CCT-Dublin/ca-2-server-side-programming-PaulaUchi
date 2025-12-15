@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>User Form</title>
+</head>
+<body>
+<div class="container">
+        <h1>Registration</h1>
+        <p class="subtitle">Please fill in all fields correctly</p>
+
+        <form id="userForm">
+            <div class="form-group">
+                <label for="first_name">First Name *</label>
+                <input type="text" id="first_name" name="first_name" required>
+                <div class="hint">Max 20 characters, letters and numbers only</div>
+                <div class="error-message" id="first_name_error"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="last_name">Last Name *</label>
+                <input type="text" id="last_name" name="last_name" required>
+                <div class="hint">Max 20 characters, letters and numbers only</div>
+                <div class="error-message" id="last_name_error"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email *</label>
+                <input type="email" id="email" name="email" required>
+                <div class="hint">Valid email format (e.g., user@example.com)</div>
+                <div class="error-message" id="email_error"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="phone">Phone Number *</label>
+                <input type="text" id="phone" name="phone" required maxlength="10">
+                <div class="hint">Exactly 10 digits (e.g., 0851234567)</div>
+                <div class="error-message" id="phone_error"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="eir_code">Eircode *</label>
+                <input type="text" id="eir_code" name="eir_code" required maxlength="6">
+                <div class="hint">6 characters, starts with number (e.g., 3UMUTI)</div>
+                <div class="error-message" id="eir_code_error"></div>
+            </div>
+
+            <button type="submit">Submit</button>
+        </form>
+
+        <div class="success-message" id="successMessage">
+            Submitted successfully!
+        </div>
+
+        <div class="general-error" id="generalError"></div>
+    </div>
+
+<script src="script.js"></script>
+
+</body>
+</html>
