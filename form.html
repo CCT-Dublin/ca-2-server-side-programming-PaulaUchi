@@ -1,60 +1,67 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="en">
 <head>
-  <title>User Form</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Submit Record</title>
 </head>
 <body>
-<div class="container">
-        <h1>Registration</h1>
-        <p class="subtitle">Please fill in all fields correctly</p>
+  <h1>Submit Record</h1>
 
-        <form id="userForm">
-            <div class="form-group">
-                <label for="first_name">First Name *</label>
-                <input type="text" id="first_name" name="first_name" required>
-                <div class="hint">Max 20 characters, letters and numbers only</div>
-                <div class="error-message" id="first_name_error"></div>
-            </div>
+  <form id="myForm">
+    <label>First name <input name="first_name" maxlength="20" required /></label><br/>
+    <label>Second name <input name="second_name" maxlength="20" required /></label><br/>
+    <label>Email <input name="email" type="email" required /></label><br/>
+    <label>Phone number <input name="phone_number" inputmode="numeric" required /></label><br/>
+    <label>Eircode <input name="eircode" maxlength="6" required /></label><br/>
+    <button type="submit">Submit</button>
+  </form>
 
-            <div class="form-group">
-                <label for="last_name">Last Name *</label>
-                <input type="text" id="last_name" name="last_name" required>
-                <div class="hint">Max 20 characters, letters and numbers only</div>
-                <div class="error-message" id="last_name_error"></div>
-            </div>
+  <p id="msg"></p>
 
-            <div class="form-group">
-                <label for="email">Email *</label>
-                <input type="email" id="email" name="email" required>
-                <div class="hint">Valid email format (e.g., user@example.com)</div>
-                <div class="error-message" id="email_error"></div>
-            </div>
+<script>
+  const form = document.getElementById("myForm");
+  const msg = document.getElementById("msg");
 
-            <div class="form-group">
-                <label for="phone">Phone Number *</label>
-                <input type="text" id="phone" name="phone" required maxlength="10">
-                <div class="hint">Exactly 10 digits (e.g., 0851234567)</div>
-                <div class="error-message" id="phone_error"></div>
-            </div>
+  const isAlnumMax20 = s => /^[a-z0-9]+$/i.test(s) && s.length <= 20;
+  const isEmail = s => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
+  const isPhone10 = s => /^\d{10}$/.test(s);
+  const isEircode6 = s => /^[0-9][a-z0-9]{5}$/i.test(s);
 
-            <div class="form-group">
-                <label for="eir_code">Eircode *</label>
-                <input type="text" id="eir_code" name="eir_code" required maxlength="6">
-                <div class="hint">6 characters, starts with number (e.g., 3UMUTI)</div>
-                <div class="error-message" id="eir_code_error"></div>
-            </div>
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    msg.textContent = "";
 
-            <button type="submit">Submit</button>
-        </form>
+    const data = Object.fromEntries(new FormData(form).entries());
+    data.first_name = (data.first_name || "").trim();
+    data.second_name = (data.second_name || "").trim();
+    data.email = (data.email || "").trim();
+    data.phone_number = (data.phone_number || "").trim();
+    data.eircode = (data.eircode || "").trim();
 
-        <div class="success-message" id="successMessage">
-            Submitted successfully!
-        </div>
+    const errors = [];
+    if (!isAlnumMax20(data.first_name)) errors.push("First name: letters/numbers only, max 20.");
+    if (!isAlnumMax20(data.second_name)) errors.push("Second name: letters/numbers only, max 20.");
+    if (!isEmail(data.email)) errors.push("Email format invalid.");
+    if (!isPhone10(data.phone_number)) errors.push("Phone must be exactly 10 digits (numbers only).");
+    if (!isEircode6(data.eircode)) errors.push("Eircode must start with a number, be alphanumeric, exactly 6 chars.");
 
-        <div class="general-error" id="generalError"></div>
-    </div>
+    if (errors.length) {
+      msg.textContent = errors.join(" ");
+      return;
+    }
 
-<script src="script.js"></script>
+    // Submit to your API
+    const res = await fetch("/api/submit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data)
+    });
 
+    const out = await res.json().catch(() => ({}));
+    msg.textContent = res.ok ? "Saved!" : (out.error || "Error saving record.");
+    if (res.ok) form.reset();
+  });
+</script>
 </body>
 </html>
