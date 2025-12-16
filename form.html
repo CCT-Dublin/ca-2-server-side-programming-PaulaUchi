@@ -3,10 +3,10 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Submit Record</title>
+  <title>Form</title>
 </head>
 <body>
-  <h1>Submit Record</h1>
+  <h1>Submit Details</h1>
 
   <form id="myForm">
     <label>First name <input name="first_name" maxlength="20" required /></label><br/>
@@ -17,12 +17,16 @@
     <button type="submit">Submit</button>
   </form>
 
-  <p id="msg"></p>
+    <!-- WILL SHOW THE ERROR MESSAGES -->
+  <p id="msg"></p> 
 
+
+  <!-- THE SCRIP TO VALIDATE THE FORM -->
 <script>
   const form = document.getElementById("myForm");
   const msg = document.getElementById("msg");
 
+  //user DETAILS VALIDATION 
   const isAlnumMax20 = s => /^[a-z0-9]+$/i.test(s) && s.length <= 20;
   const isEmail = s => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
   const isPhone10 = s => /^\d{10}$/.test(s);
@@ -32,7 +36,10 @@
     e.preventDefault();
     msg.textContent = "";
 
+    //collect the user input to convert it to a js ob
     const data = Object.fromEntries(new FormData(form).entries());
+
+    //collects data and /trim to clean it
     data.first_name = (data.first_name || "").trim();
     data.second_name = (data.second_name || "").trim();
     data.email = (data.email || "").trim();
@@ -40,10 +47,11 @@
     data.eircode = (data.eircode || "").trim();
 
     const errors = [];
+    //validation of requirements fot input
     if (!isAlnumMax20(data.first_name)) errors.push("First name: letters/numbers only, max 20.");
     if (!isAlnumMax20(data.second_name)) errors.push("Second name: letters/numbers only, max 20.");
     if (!isEmail(data.email)) errors.push("Email format invalid.");
-    if (!isPhone10(data.phone_number)) errors.push("Phone must be exactly 10 digits (numbers only).");
+    if (!isPhone10(data.phone_number)) errors.push("Phone must be exactly 10 digits");
     if (!isEircode6(data.eircode)) errors.push("Eircode must start with a number, be alphanumeric, exactly 6 chars.");
 
     if (errors.length) {
@@ -51,15 +59,15 @@
       return;
     }
 
-    // Submit to your API
+    // submit the data to the api/backend
     const res = await fetch("/api/submit", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data)
     });
-
+// responds from the server
     const out = await res.json().catch(() => ({}));
-    msg.textContent = res.ok ? "Saved!" : (out.error || "Error saving record.");
+    msg.textContent = res.ok ? "Saved" : (out.error || "Error");
     if (res.ok) form.reset();
   });
 </script>
