@@ -61,16 +61,34 @@ function validateDbRow(r) {
   }
 })
 
+----------------------------
 
   //Reading the file from row 1 and increasing
-fs.createReadStream(filePath)
-  .pipe(csv())                            // to become a javascript object on each row
+
+  let rowNumber = 1; 
+
+fs.createReadStream(filePath)   // will read the file line by line
+  .pipe(csv())                                  //converts to an js object
   .on("data", async (csvRow) => {
-    const dbRow = mapRow(csvRow);
-    
-    try {                          //insert valid rows into the database
-      await pool.query(              //mysql statement
-        `INSERT INTO mysql_table                   
+    rowNumber++;
+
+    const dbRow = {               //check every header to match the database    
+      first_name: (csvRow.first_name || "").trim(),             // all headers must match the csv file
+      second_name: (csvRow.last_name || "").trim(),
+      email: (csvRow.email || "").trim(),
+      phone_number: (csvRow.phone || "").trim(),
+      eircode: (csvRow.eir_code || "").trim()
+    };
+
+    const errors = validateDbRow(dbRow);
+
+    if (errors.length > 0) {
+      console.error(`Row ${rowNumber} invalid: ${errors.join(", ")}`);
+      return;                                        // skip invalid rows + rown number
+
+    try {
+      await pool.query(                //if validation ok, it will insert the good rows in the table
+        `INSERT INTO mysql_table
          (first_name, second_name, email, phone_number, eircode)
          VALUES (?,?,?,?,?)`,
         [
@@ -81,15 +99,12 @@ fs.createReadStream(filePath)
           dbRow.eircode
         ]
       );
-    } catch (e) {                          //database errors
-      console.error("Insert failed:", e.message);
+    } catch (e) {
+      console.error(`Row ${rowNumber} DB error:`, e.message);
     }
   })
-  .on("end", () => {                                    //When the cvs is fully processed
-    console.log("CSV import complete");
+  .on("end", () => {
+    console.log("CSV import complete");            // runs at the end of the file
     process.exit(0);
   })
-  .on("error", e => {                             //file or convertion errors
-    console.error("CSV error:", e.message);
-    process.exit(1);
-  });
+  
