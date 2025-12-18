@@ -4,7 +4,7 @@ require("dotenv").config();
 const fs = require("fs");
 const path = require("path");
 const csv = require("csv-parser");
-const { pool, ensureSchema } = require("./db");
+const { db: pool, ensureSchema } = require("./db");
 
 const CSV_FILE = process.argv[2]; // checks for the file
 
@@ -29,14 +29,6 @@ function isEircode6(s) {
 }
 
 
-//validate a CSV file headers.must match
-const EXPECTED_HEADERS = [
-  "firstName",
-  "secondName",
-  "email",
-  "phone",
-  "eircode"
-];
 
 //validation of each row in the database-returns error
 function validateDbRow(r) {
@@ -49,26 +41,27 @@ function validateDbRow(r) {
   return errors;
 }
 
+const filePath = path.resolve(CSV_FILE);
+
 //ensure the schema and the file are ok 
 
 (async () => {
   await ensureSchema();
 
-  const filePath = path.resolve(CSV_FILE);
   if (!fs.existsSync(filePath)) {
     console.error("CSV file not found:", filePath);
     process.exit(1);
   }
-})
-
-----------------------------
 
   //Reading the file from row 1 and increasing
 
   let rowNumber = 1; 
 
 fs.createReadStream(filePath)   // will read the file line by line
-  .pipe(csv())                                  //converts to an js object
+  .pipe(csv({
+  mapHeaders: ({ header }) => header.replace(/^\uFEFF/, "").trim()    //removes the bom character              //converts to an js object
+}))     
+                 
   .on("data", async (csvRow) => {
     rowNumber++;
 
@@ -85,7 +78,7 @@ fs.createReadStream(filePath)   // will read the file line by line
     if (errors.length > 0) {
       console.error(`Row ${rowNumber} invalid: ${errors.join(", ")}`);
       return;                                        // skip invalid rows + rown number
-
+    }
     try {
       await pool.query(                //if validation ok, it will insert the good rows in the table
         `INSERT INTO mysql_table
@@ -102,9 +95,6 @@ fs.createReadStream(filePath)   // will read the file line by line
     } catch (e) {
       console.error(`Row ${rowNumber} DB error:`, e.message);
     }
-  })
-  .on("end", () => {
-    console.log("CSV import complete");            // runs at the end of the file
-    process.exit(0);
-  })
-  
+  });
+})();
+ 
