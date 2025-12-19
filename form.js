@@ -1,5 +1,5 @@
 
-
+// connection with web
 const form = document.getElementById("myForm");
 const msg = document.getElementById("msg");
 
@@ -9,6 +9,7 @@ const isEmail = s => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
 const isPhone10 = s => /^\d{10}$/.test(s);
 const isEircode6 = s => /^[0-9][a-z0-9]{5}$/i.test(s);
 
+//listen to the form submittion
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
   msg.textContent = "";
@@ -34,7 +35,7 @@ form.addEventListener("submit", async (e) => {
   if (!isEircode6(data.eircode)) errors.push("Eircode invalid");
 
   if (errors.length) {
-    msg.textContent = errors.join(" ");
+    msg.textContent = errors.join(" ");     // will show the error to the user
     return;
   }
 // submit the data to the api/backend

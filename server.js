@@ -67,7 +67,7 @@ const server = app.listen(PORT, () =>
 );
 
 server.on("error", (err) => {     //check error and gives a message
-  if (err.code === "EADDRINUSE") { //por alredy in use
+  if (err.code === "EADDRINUSE") { //port alredy in use
     console.error(`Port ${PORT} is already in use`);
   } else {
     console.error("Server error:", err.message);
